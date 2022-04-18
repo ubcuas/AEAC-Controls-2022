@@ -9,25 +9,25 @@ MOTORS = {
     "pololu_1": {
         "position": "front left",
         "frequency": 300, # 300 rpm
-        "enc_pins": [15,16], # encA, encB (15,16)
+        "enc_pins": [15,16], # encA, encB
         "driver_pins": [0, 7], # dir, en
     },
     "pololu_2": {
         "position": "front right",
         "frequency": 300, # 300 rpm
-        "enc_pins": [1, 4], # encA, encB (15,16)
+        "enc_pins": [1, 4], # encA, encB
         "driver_pins": [2, 3], # dir, en
     },
     "pololu_3": {
         "position": "rear left",
         "frequency": 300, # 300 rpm
-        "enc_pins": [5, 6], # encA, encB (15,16)
+        "enc_pins": [5, 6], # encA, encB
         "driver_pins": [30, 14], # dir, en
     },
     "pololu_4": {
         "position": "rear right",
         "frequency": 300, # 300 rpm
-        "enc_pins": [10,11], # encA, encB (15,16)
+        "enc_pins": [31, 11], # encA, encB
         "driver_pins": [12, 13], # dir, en
     },
     "actuonix_1": {
