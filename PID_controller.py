@@ -1,8 +1,12 @@
 # PID loop controller for motor encoder
 import time
+import logging
 from constants import *
 from encoder import Encoder
 from utils import pwmToDc
+
+logging.basicConfig(level=logging.DEBUG)
+uaslog = logging.getLogger("UASlogger")
 
 class PID:
     def __init__(self, enc_pins, target=0, debug=False):
@@ -16,7 +20,7 @@ class PID:
         self.eintegral = float(0)
         self.debug = debug
 
-        self.enc = Encoder(enc_pins) # callback = updatePos
+        self.enc = Encoder(enc_pins, updatePosCallback) # callback = updatePos
 
     def loop(self, target):
         self.target = target
@@ -77,3 +81,6 @@ class PID:
 
     def getDc(self):
         return self.dc
+
+def updatePosCallback(pos):
+    uaslog.info("New position: {}".format(pos))

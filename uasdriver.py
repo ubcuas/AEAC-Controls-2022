@@ -2,7 +2,7 @@ import time
 import sys
 import mecanum
 import math
-import logging as log
+import logging
 import odroid_wiringpi as wpi
 from pwm import PWM
 from constants import *
@@ -13,11 +13,13 @@ from utils import remap_range
 from PID_controller import PID
 from encoder import Encoder
 
-log.basicConfig(level=log.DEBUG)
+logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
+uaslog = logging.getLogger("UASlogger")
 
 class UASDriver:
     def __init__(self):
-        log.info("Starting Motor Drive System init...")
+        uaslog.info("Starting Motor Drive System init...")
 
         ############################
         # INIT MOTOR TARGET VALUES #
@@ -26,8 +28,9 @@ class UASDriver:
         self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
         self.target_turnigy = [0] #t1, t2 = [in/out]
 
-        self.plate_closed = False
+        self.button_pressed = [1, 0, 0, 0]  # A B X Y
         self.ljs_pressed = False
+        self.plate_closed = False
         self.mode = ControlMode.IDLE
 
         ######################
@@ -53,14 +56,14 @@ class UASDriver:
         ############
         # INIT PWM #
         ############
-        log.debug("Init PWM...")
+        uaslog.debug("Init PWM...")
         self.pwm = PWM(address=I2C_CHIP, busnum=I2C_BUS, debug=False)
         self.pwm.setPWMFreq(FREQUENCY)
 
-        ###############
-        # INIT MOTORS #
-        ###############
-        log.debug("Init Motors...")
+        # ###############
+        # # INIT MOTORS #
+        # ###############
+        uaslog.debug("Init Motors...")
         # ACTUATORS
         self.actuonix_1 = PCA9685(channel=CHANNEL8, freq=300)
         self.actuonix_1.reset(self.pwm)
@@ -104,13 +107,13 @@ class UASDriver:
         self.pololu_4.reset(self.pwm)
 
         # INIT PID CONTROLLERS
-        log.debug("Init PID controllers...")
+        uaslog.debug("Init PID controllers...")
         self.pid_1 = PID(MOTORS["pololu_1"]["enc_pins"])
         self.pid_2 = PID(MOTORS["pololu_2"]["enc_pins"])
         self.pid_3 = PID(MOTORS["pololu_3"]["enc_pins"])
         self.pid_4 = PID(MOTORS["pololu_4"]["enc_pins"])
 
-        log.info("Motor Drive System init complete! Starting main routine...")
+        uaslog.info("Motor Drive System init complete! Starting main routine...")
         
         # self.controlLoop()
     
@@ -135,10 +138,10 @@ class UASDriver:
         self.rjs_y = rjs_y
         self.rjs_sw = rjs_sw
 
-        log.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
+        uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
     
     def updatePosCallback(self, pos):
-        log.info("New position: {}".format(pos))
+        uaslog.info("New position: {}".format(pos))
 
     def controlLoop(self):
 
@@ -149,16 +152,16 @@ class UASDriver:
                 # button debouncing detection
                 while not self.buttonA:
                     self.button_pressed = [1, 0, 0, 0]
-                    log.info("DRIVE MODE")
+                    uaslog.info("DRIVE MODE")
                 while not self.buttonB:
                     self.button_pressed = [0, 1, 0, 0]
-                    log.info("WINCH MODE")
+                    uaslog.info("WINCH MODE")
                 while not self.buttonX:
                     self.button_pressed = [0, 0, 1, 0]
-                    log.info("CLAW MODE")
+                    uaslog.info("CLAW MODE")
                 while not self.buttonY:
                     self.button_pressed = [0, 0, 0, 1]
-                    log.info("IDLE MODE")
+                    uaslog.info("IDLE MODE")
                 while not self.ljs_sw:
                     self.ljs_pressed = True
 
@@ -172,20 +175,20 @@ class UASDriver:
                 elif self.button_pressed[3]:
                     self.mode = ControlMode.IDLE
                 else:
-                    log.error("ERROR: mode not recognized :(")
+                    uaslog.error("ERROR: mode not recognized :(")
 
                 # move according to mode and joystick ctrls
                 if self.mode == ControlMode.IDLE:
-                    log.debug("idle")
+                    uaslog.debug("idle")
                     pass
 
                 elif self.mode == ControlMode.DRIVE:
-                    log.debug("drive")
+                    uaslog.debug("drive")
 
                     self.target_pololu = mecanum.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
 
-                    log.debug(f"target: {self.target_pololu}")
-                    log.debug(f"pos: {[0.0, self.pid_1.getDc(), self.pid_2.getDc(), self.pid_3.getDc(), self.pid_4.getDc()]}")
+                    uaslog.debug(f"target: {self.target_pololu}")
+                    uaslog.debug(f"pos: {[0.0, self.pid_1.getDc(), self.pid_2.getDc(), self.pid_3.getDc(), self.pid_4.getDc()]}")
 
                     self.pid_1.loop(round(self.target_pololu[1]))
                     self.pid_2.loop(round(self.target_pololu[2]))
@@ -214,7 +217,7 @@ class UASDriver:
                         self.pololu_4.backward(self.pwm, dutycycle=self.pid_4.getDc())
                 
                 elif self.mode == ControlMode.WINCH:
-                    log.debug("winch")
+                    uaslog.debug("winch")
                     if self.ljs_y > 0.3:
                         self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
                     elif self.ljs_y < -0.3:
@@ -223,10 +226,10 @@ class UASDriver:
                         self.pololu_0.backward(self.pwm, dutycycle=0)
 
                 elif self.mode == ControlMode.CLAW:
-                    log.debug("claw")
+                    uaslog.debug("claw")
 
                     # VERTICAL ACTUATORS
-                    log.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
+                    uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
 
                     # not allowed: 30 & y+, 0 and y-
                     if not ((math.ceil(self.target_actuator[0]) >= 30 and self.ljs_y > -0.2) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y < 0.2)):
@@ -255,14 +258,14 @@ class UASDriver:
 
                         self.ljs_pressed = False
                 else:
-                    log.error("Mode not recognized :(")
+                    uaslog.error("Mode not recognized :(")
 
         except KeyboardInterrupt:
             self.cleanup()
             sys.exit(0)
 
     def init_gpio(self):
-        log.info("Init GPIO...")
+        uaslog.info("Init GPIO...")
         # unexport pins
         for pin in range(0, 256):
             file = open("/sys/class/gpio/unexport","w")
@@ -280,10 +283,10 @@ class UASDriver:
             wpi.pinMode(pin, wpi.OUTPUT)
             # init out pins low
             wpi.digitalWrite(pin, 0)
-        log.info("Init GPIO complete!")
+        uaslog.info("Init GPIO complete!")
 
     def cleanup(self):
-        log.info("Cleaning up driver system...")
+        uaslog.info("Cleaning up driver system...")
         # reset motors
         self.actuonix_1.reset(self.pwm)
         self.actuonix_2.reset(self.pwm)
@@ -302,4 +305,4 @@ class UASDriver:
             file = open("/sys/class/gpio/unexport","w")
             file.write(str(pin))
 
-        log.info("Driver system cleanup complete!")
+        uaslog.info("Driver system cleanup complete!")
