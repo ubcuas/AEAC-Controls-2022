@@ -40,7 +40,7 @@ class UASDriver:
         self.button_pressed = [0, 0, 0, 1]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
-        self.mode = ControlMode.IDLE
+        self.mode = DriverControlMode.IDLE
 
         ######################
         # INIT REMOTE VALUES #
@@ -186,22 +186,22 @@ class UASDriver:
 
                 # mode assignment
                 if self.button_pressed[0]:
-                    self.mode = ControlMode.DRIVE
+                    self.mode = DriverControlMode.DRIVE
                 elif self.button_pressed[1]:
-                    self.mode = ControlMode.WINCH
+                    self.mode = DriverControlMode.WINCH
                 elif self.button_pressed[2]:
-                    self.mode = ControlMode.CLAW
+                    self.mode = DriverControlMode.CLAW
                 elif self.button_pressed[3]:
-                    self.mode = ControlMode.IDLE
+                    self.mode = DriverControlMode.IDLE
                 else:
                     uaslog.error("ERROR: mode not recognized :(")
 
                 # move according to mode and joystick ctrls
-                if self.mode == ControlMode.IDLE:
+                if self.mode == DriverControlMode.IDLE:
                     uaslog.debug("idle")
                     pass
 
-                elif self.mode == ControlMode.DRIVE:
+                elif self.mode == DriverControlMode.DRIVE:
                     uaslog.debug("drive")
 
                     self.target_pololu = drive.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
@@ -235,7 +235,7 @@ class UASDriver:
                     elif self.pid_4.getDir() == 1:
                         self.pololu_4.backward(self.pwm, dutycycle=self.pid_4.getDc())
                 
-                elif self.mode == ControlMode.WINCH:
+                elif self.mode == DriverControlMode.WINCH:
                     uaslog.debug("winch")
                     pass
                     
@@ -246,7 +246,7 @@ class UASDriver:
                     # else:
                     #     self.pololu_0.backward(self.pwm, dutycycle=0)
 
-                elif self.mode == ControlMode.CLAW:
+                elif self.mode == DriverControlMode.CLAW:
                     uaslog.debug("claw")
 
                     # VERTICAL ACTUATORS

@@ -102,7 +102,7 @@ GPIO_IN = [15, 16, 1, 4, 5, 6, 10, 11]
 GPIO_OUT = [7, 0, 2, 3, 12, 13, 14, 30, 21, 22]
 
 # CONTROL MODE
-class ControlMode(Enum):
+class DriverControlMode(Enum):
     IDLE = 0
     DRIVE = 1
     WINCH = 2
