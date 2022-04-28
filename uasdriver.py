@@ -37,7 +37,7 @@ class UASDriver:
         self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
         self.target_turnigy = [0] #t1, t2 = [in/out]
 
-        self.button_pressed = [1, 0, 0, 0]  # A B X Y
+        self.button_pressed = [0, 0, 0, 1]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
         self.mode = ControlMode.IDLE
@@ -100,8 +100,8 @@ class UASDriver:
         # self.turnigy_2.setPWM(self.pwm, dutycycle=28)
         
         # DC BRUSHED
-        self.pololu_0 = TB9051FTG(channel=CHANNEL0, freq=300, pin_in=MOTORS["pololu_0"]["enc_pins"], pin_out=MOTORS["pololu_0"]["driver_pins"], single=True)
-        self.pololu_0.reset(self.pwm)
+        # self.pololu_0 = TB9051FTG(channel=CHANNEL0, freq=300, pin_in=MOTORS["pololu_0"]["enc_pins"], pin_out=MOTORS["pololu_0"]["driver_pins"], single=True)
+        # self.pololu_0.reset(self.pwm)
 
         self.pololu_1 = TB9051FTG(channel=CHANNEL4, freq=300, pin_in=MOTORS["pololu_1"]["enc_pins"], pin_out=MOTORS["pololu_1"]["driver_pins"])
         self.pololu_1.reset(self.pwm)
