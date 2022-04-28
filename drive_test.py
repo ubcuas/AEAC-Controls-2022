@@ -1,6 +1,7 @@
 import time
 import sys
 import mecanum
+import drive
 import math
 import logging
 import odroid_wiringpi as wpi
@@ -25,16 +26,30 @@ PIN_Y = 10
 PIN_LJSX = 25
 PIN_LJSY = 29
         
-class JoystickControl:
+class DriveTest:
     def __init__(self):
+        uaslog.info("Starting Motor Drive System init...")
+
         ############################
         # INIT MOTOR TARGET VALUES #
         ############################
         self.target_pololu = [0, 0, 0, 0, 0] # p0, p1, p2, p3, p4 = [w, fl, fr, rl, rr]
+        self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
+        self.target_turnigy = [0] #t1, t2 = [in/out]
+
+        self.button_pressed = [1, 0, 0, 0]  # A B X Y
+        self.ljs_pressed = False
+        self.plate_closed = False
+        self.mode = ControlMode.IDLE
 
         ######################
         # INIT REMOTE VALUES #
         ######################
+        self.buttonA = 1
+        self.buttonB = 1
+        self.buttonX = 1
+        self.buttonY = 1
+
         self.ljs_x = 0.0
         self.ljs_y = 0.0
         self.ljs_sw = 1
@@ -58,6 +73,7 @@ class JoystickControl:
         # INIT MOTORS #
         ###############
         uaslog.debug("Init Motors...")
+        
         # DC BRUSHED
         self.pololu_1 = TB9051FTG(channel=CHANNEL4, freq=300, pin_in=MOTORS["pololu_1"]["enc_pins"], pin_out=MOTORS["pololu_1"]["driver_pins"])
         self.pololu_1.reset(self.pwm)
@@ -71,25 +87,23 @@ class JoystickControl:
         self.pololu_4 = TB9051FTG(channel=CHANNEL7, freq=300, pin_in=MOTORS["pololu_4"]["enc_pins"], pin_out=MOTORS["pololu_4"]["driver_pins"])
         self.pololu_4.reset(self.pwm)
 
-        ########################
-        # INIT PID CONTROLLERS #
-        ########################
+        # INIT PID CONTROLLERS
         uaslog.debug("Init PID controllers...")
-        self.pid_1 = PID(MOTORS["pololu_1"]["enc_pins"], debug=True)
+        self.pid_1 = PID(MOTORS["pololu_1"]["enc_pins"])
         self.pid_2 = PID(MOTORS["pololu_2"]["enc_pins"])
         self.pid_3 = PID(MOTORS["pololu_3"]["enc_pins"])
         self.pid_4 = PID(MOTORS["pololu_4"]["enc_pins"])
 
         uaslog.info("Motor Drive System init complete! Starting main routine...")
-    
+        
     def setRemoteValues(self, buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, ljs_sw, rjs_x, rjs_y, rjs_sw):
         # joystick movement tolerance
-        if self.ljs_x < THRESHOLD_HIGH and ljs_x > THRESHOLD_LOW:
-            self.ljs_x = 0.0
-        if self.ljs_y < THRESHOLD_HIGH and ljs_y > THRESHOLD_LOW:
-            self.ljs_y = 0.0
-        if self.rjs_x < THRESHOLD_HIGH and rjs_x > THRESHOLD_LOW:
-            self.rjs_x = 0.0
+        if ljs_x < THRESHOLD_HIGH and ljs_x > THRESHOLD_LOW:
+            ljs_x = 0.0
+        if ljs_y < THRESHOLD_HIGH and ljs_y > THRESHOLD_LOW:
+            ljs_y = 0.0
+        if rjs_x < THRESHOLD_HIGH and rjs_x > THRESHOLD_LOW:
+            rjs_x = 0.0
 
         self.buttonA = buttonA
         self.buttonB = buttonB
@@ -104,34 +118,29 @@ class JoystickControl:
         self.rjs_sw = rjs_sw
 
         uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
-        
+
     def loop(self):
-        uaslog.info("Starting Joystick Motor Control Test...")
-        uaslog.info("Joystick will control wheels to move forward or backward.")
+        uaslog.info("Starting Drive Test...")
+        uaslog.info("Use the Joystick to drive the drone.")
 
         try:
             while True:
                 # READ JOYSTICK
-                # raw_ljs_x = wpi.analogRead(PIN_LJSX)
-                # raw_ljs_y = wpi.analogRead(PIN_LJSY)
+                raw_ljs_x = wpi.analogRead(PIN_LJSX)
+                raw_ljs_y = wpi.analogRead(PIN_LJSY)
 
-                # self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+                self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
 
-                # if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
-                #     self.ljs_y = 0.0
-                # if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
-                #     self.ljs_x = 0.0
+                if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
+                    self.ljs_y = 0.0
+                if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
+                    self.ljs_x = 0.0
                 
-                # print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
+                print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
 
                 # SET MOTOR TARGETS
-                # set 1 and 4 reverse due to wheel orientation.
-                self.target_pololu[1] -= self.ljs_y * ACCEL_MULTIPLIER
-                self.target_pololu[2] += self.ljs_y * ACCEL_MULTIPLIER
-                self.target_pololu[3] += self.ljs_y * ACCEL_MULTIPLIER
-                self.target_pololu[4] -= self.ljs_y * ACCEL_MULTIPLIER
+                self.target_pololu = drive.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
                 
-                # print(f"target pos: [{self.target_pololu[1]:.4f}]")
                 print(f"target pos: [{self.target_pololu[1]:.4f}, {self.target_pololu[2]:.4f}, {self.target_pololu[3]:.4f}, {self.target_pololu[4]:.4f}]")
 
                 self.pid_1.loop(round(self.target_pololu[1]))
@@ -160,11 +169,10 @@ class JoystickControl:
                 elif self.pid_4.getDir() == 1:
                     self.pololu_4.backward(self.pwm, dutycycle=self.pid_4.getDc())
                 
-                # print(f"curr pos: [{self.pid_1.getPos()}]")
                 print(f"curr pos: [{self.pid_1.getPos()}, {self.pid_2.getPos()}, {self.pid_3.getPos()}, {self.pid_4.getPos()}, ]")
                 
         except KeyboardInterrupt:
-            uaslog.info("Joystick Control Test Complete!")
+            uaslog.info("Drive Test Complete!")
             self.cleanup()
             sys.exit(0)
 
@@ -187,26 +195,19 @@ class JoystickControl:
                 wpi.pinMode(pin, wpi.OUTPUT)
                 # init out pins low
                 wpi.digitalWrite(pin, 0)
+
             uaslog.info("Init GPIO complete!")
 
     def cleanup(self):
         uaslog.info("Cleaning up driver system...")
-
         # reset motors
         self.pololu_1.reset(self.pwm)
         self.pololu_2.reset(self.pwm)
         self.pololu_3.reset(self.pwm)
         self.pololu_4.reset(self.pwm)
 
-        # unexport pins
-        for pin in range(0, 256):
-            file = open("/sys/class/gpio/unexport","w")
-            file.write(str(pin))
-        
-        uaslog.info("Driver system cleanup complete!")
-
 def main():
-    test = JoystickControl()
+    test = DriveTest()
     test.loop()
         
 if __name__ == "__main__":

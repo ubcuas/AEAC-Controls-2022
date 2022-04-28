@@ -1,6 +1,5 @@
 import time
 import sys
-import mecanum
 import math
 import logging
 import odroid_wiringpi as wpi
@@ -19,6 +18,20 @@ uaslog = logging.getLogger("UASlogger")
         
 class EncoderPosition:
     def __init__(self):
+        ######################
+        # INIT REMOTE VALUES #
+        ######################
+        self.buttonA = 1
+        self.buttonB = 1
+        self.buttonX = 1
+        self.buttonY = 1
+
+        self.ljs_x = 0.0
+        self.ljs_y = 0.0
+        self.ljs_sw = 1
+        self.rjs_x = 0.0
+        self.rjs_y = 0.0
+        self.rjs_sw = 1
 
         ##################
         # INIT GPIO PINS #
@@ -26,6 +39,29 @@ class EncoderPosition:
         self.init_gpio()
 
         uaslog.info("Motor Drive System init complete! Starting main routine...")
+        
+    def setRemoteValues(self, buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, ljs_sw, rjs_x, rjs_y, rjs_sw):
+        # joystick movement tolerance
+        if ljs_x < THRESHOLD_HIGH and ljs_x > THRESHOLD_LOW:
+            ljs_x = 0.0
+        if ljs_y < THRESHOLD_HIGH and ljs_y > THRESHOLD_LOW:
+            ljs_y = 0.0
+        if rjs_x < THRESHOLD_HIGH and rjs_x > THRESHOLD_LOW:
+            rjs_x = 0.0
+
+        self.buttonA = buttonA
+        self.buttonB = buttonB
+        self.buttonX = buttonX
+        self.buttonY = buttonY
+
+        self.ljs_x = ljs_x
+        self.ljs_y = ljs_y
+        self.ljs_sw = ljs_sw
+        self.rjs_x = rjs_x
+        self.rjs_y = rjs_y
+        self.rjs_sw = rjs_sw
+
+        uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
         
     def loop(self):
         uaslog.info("Starting Encoder Position Sensing Test...")
@@ -41,8 +77,8 @@ class EncoderPosition:
                 print(f"Position enc1: {enc1.getPos()}, enc2: {enc2.getPos()}, enc3: {enc3.getPos()}, enc4: {enc4.getPos()}")
                 time.sleep(0.5)
                 
-        except KeyboardInterrupt:
-            uaslog.info("Encoder Position Sensing Test Complete!")
+        except Exception as e:
+            uaslog.warning(f"{e}\nEncoder Position Sensing Test Complete.")
             self.cleanup()
             sys.exit(0)
 

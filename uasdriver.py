@@ -1,6 +1,7 @@
 import time
 import sys
 import mecanum
+import drive
 import math
 import logging
 import odroid_wiringpi as wpi
@@ -16,6 +17,14 @@ from encoder import Encoder
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG)
 uaslog = logging.getLogger("UASlogger")
+
+PIN_A = 27
+PIN_B = 23
+PIN_X = 26
+PIN_Y = 10
+
+PIN_LJSX = 25
+PIN_LJSY = 29
 
 class UASDriver:
     def __init__(self):
@@ -60,9 +69,9 @@ class UASDriver:
         self.pwm = PWM(address=I2C_CHIP, busnum=I2C_BUS, debug=False)
         self.pwm.setPWMFreq(FREQUENCY)
 
-        # ###############
-        # # INIT MOTORS #
-        # ###############
+        ###############
+        # INIT MOTORS #
+        ###############
         uaslog.debug("Init Motors...")
         # ACTUATORS
         self.actuonix_1 = PCA9685(channel=CHANNEL8, freq=300)
@@ -81,14 +90,14 @@ class UASDriver:
         self.actuonix_4.reset(self.pwm)
         self.actuonix_4.setPWM(self.pwm, dutycycle=30)
         
-        # SERVO
-        self.turnigy_1 = PCA9685(channel=CHANNEL12, freq=300)
-        self.turnigy_1.reset(self.pwm)
-        self.turnigy_1.setPWM(self.pwm, dutycycle=28)
+        # # SERVO
+        # self.turnigy_1 = PCA9685(channel=CHANNEL12, freq=300)
+        # self.turnigy_1.reset(self.pwm)
+        # self.turnigy_1.setPWM(self.pwm, dutycycle=28)
 
-        self.turnigy_2 = PCA9685(channel=CHANNEL13, freq=300)
-        self.turnigy_2.reset(self.pwm)
-        self.turnigy_2.setPWM(self.pwm, dutycycle=28)
+        # self.turnigy_2 = PCA9685(channel=CHANNEL13, freq=300)
+        # self.turnigy_2.reset(self.pwm)
+        # self.turnigy_2.setPWM(self.pwm, dutycycle=28)
         
         # DC BRUSHED
         self.pololu_0 = TB9051FTG(channel=CHANNEL0, freq=300, pin_in=MOTORS["pololu_0"]["enc_pins"], pin_out=MOTORS["pololu_0"]["driver_pins"], single=True)
@@ -119,11 +128,11 @@ class UASDriver:
     
     def setRemoteValues(self, buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, ljs_sw, rjs_x, rjs_y, rjs_sw):
         # joystick movement tolerance
-        if ljs_x < 0.2 and ljs_x > -0.2:
+        if ljs_x < THRESHOLD_HIGH and ljs_x > THRESHOLD_LOW:
             ljs_x = 0.0
-        if ljs_y < 0.2 and ljs_y > -0.2:
+        if ljs_y < THRESHOLD_HIGH and ljs_y > THRESHOLD_LOW:
             ljs_y = 0.0
-        if rjs_x < 0.2 and rjs_x > -0.2:
+        if rjs_x < THRESHOLD_HIGH and rjs_x > THRESHOLD_LOW:
             rjs_x = 0.0
 
         self.buttonA = buttonA
@@ -144,10 +153,20 @@ class UASDriver:
         uaslog.info("New position: {}".format(pos))
 
     def controlLoop(self):
-
+        uaslog.info("Starting Control Loop.")
+        
         try:
             while True:
                 # NOTE: remote control values are set in the main thread
+                # raw_ljs_x = wpi.analogRead(PIN_LJSX)
+                # raw_ljs_y = wpi.analogRead(PIN_LJSY)
+
+                # self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+
+                # if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
+                #     self.ljs_y = 0.0
+                # if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
+                #     self.ljs_x = 0.0
 
                 # button debouncing detection
                 while not self.buttonA:
@@ -185,7 +204,7 @@ class UASDriver:
                 elif self.mode == ControlMode.DRIVE:
                     uaslog.debug("drive")
 
-                    self.target_pololu = mecanum.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
+                    self.target_pololu = drive.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
 
                     uaslog.debug(f"target: {self.target_pololu}")
                     uaslog.debug(f"pos: {[0.0, self.pid_1.getDc(), self.pid_2.getDc(), self.pid_3.getDc(), self.pid_4.getDc()]}")
@@ -218,12 +237,14 @@ class UASDriver:
                 
                 elif self.mode == ControlMode.WINCH:
                     uaslog.debug("winch")
-                    if self.ljs_y > 0.3:
-                        self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
-                    elif self.ljs_y < -0.3:
-                        self.pololu_0.backward(self.pwm, dutycycle=WINCH_DC_SPEED)
-                    else:
-                        self.pololu_0.backward(self.pwm, dutycycle=0)
+                    pass
+                    
+                    # if self.ljs_y > THRESHOLD_HIGH + 0.1:
+                    #     self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
+                    # elif self.ljs_y < THRESHOLD_LOW - 0.1:
+                    #     self.pololu_0.backward(self.pwm, dutycycle=WINCH_DC_SPEED)
+                    # else:
+                    #     self.pololu_0.backward(self.pwm, dutycycle=0)
 
                 elif self.mode == ControlMode.CLAW:
                     uaslog.debug("claw")
@@ -231,32 +252,32 @@ class UASDriver:
                     # VERTICAL ACTUATORS
                     uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
 
-                    # not allowed: 30 & y+, 0 and y-
-                    if not ((math.ceil(self.target_actuator[0]) >= 30 and self.ljs_y > -0.2) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y < 0.2)):
+                    # not allowed: dc 30 & y+, dc 0 and y-
+                    if not ((math.ceil(self.target_actuator[0]) >= ACTUATOR_DC_MIN and self.ljs_y > THRESHOLD_LOW) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y < THRESHOLD_HIGH)):
                         self.target_actuator[0] += self.ljs_y
                         self.actuonix_1.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                         self.actuonix_2.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                         time.sleep(0.08)
 
                     # HORIZONTAL ACTUATORS
-                    # not allowed: 30 & y+, 0 and y-
-                    if not ((math.ceil(self.target_actuator[1]) >= 30 and self.ljs_x > -0.2) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x < 0.2)):
+                    # not allowed: dc 30 & y+, dc 0 and y-
+                    if not ((math.ceil(self.target_actuator[1]) >= ACTUATOR_DC_MIN and self.ljs_x > THRESHOLD_LOW) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x < THRESHOLD_HIGH)):
                         self.target_actuator[1] += self.ljs_x
-                        self.actuonix_3.setPWM(self.pwm, dutycycle=self.target_actuator[1]+ACTUATOR_DC_MIN)
-                        self.actuonix_4.setPWM(self.pwm, dutycycle=self.target_actuator[1]+ACTUATOR_DC_MIN)
+                        self.actuonix_3.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
+                        self.actuonix_4.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
                         time.sleep(0.08)
 
-                    if self.ljs_pressed:
-                        if plate_closed:
-                            plate_closed = False
-                            self.turnigy_1.setPWM(self.pwm, dutycycle=28)
-                            self.turnigy_2.setPWM(self.pwm, dutycycle=28)
-                        elif not plate_closed:
-                            plate_closed = True
-                            self.turnigy_1.setPWM(self.pwm, dutycycle=56)
-                            self.turnigy_2.setPWM(self.pwm, dutycycle=56)
+                    # if self.ljs_pressed:
+                    #     if self.plate_closed:
+                    #         self.plate_closed = False
+                    #         self.turnigy_1.setPWM(self.pwm, dutycycle=MOTORS["turnigy_1"]["dc_low"])
+                    #         self.turnigy_2.setPWM(self.pwm, dutycycle=MOTORS["turnigy_1"]["dc_low"])
+                    #     elif not self.plate_closed:
+                    #         self.plate_closed = True
+                    #         self.turnigy_1.setPWM(self.pwm, dutycycle=MOTORS["turnigy_1"]["dc_high"])
+                    #         self.turnigy_2.setPWM(self.pwm, dutycycle=MOTORS["turnigy_1"]["dc_high"])
 
-                        self.ljs_pressed = False
+                    #     self.ljs_pressed = False
                 else:
                     uaslog.error("Mode not recognized :(")
 
@@ -292,8 +313,8 @@ class UASDriver:
         self.actuonix_2.reset(self.pwm)
         self.actuonix_3.reset(self.pwm)
         self.actuonix_4.reset(self.pwm)
-        self.turnigy_1.reset(self.pwm)
-        self.turnigy_2.reset(self.pwm)
+        # self.turnigy_1.reset(self.pwm)
+        # self.turnigy_2.reset(self.pwm)
         self.pololu_0.reset(self.pwm)
         self.pololu_1.reset(self.pwm)
         self.pololu_2.reset(self.pwm)
@@ -306,3 +327,10 @@ class UASDriver:
             file.write(str(pin))
 
         uaslog.info("Driver system cleanup complete!")
+
+def main():
+    test = UASDriver()
+    test.controlLoop()
+        
+if __name__ == "__main__":
+    main()
