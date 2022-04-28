@@ -20,13 +20,13 @@ class PID:
         self.eintegral = float(0)
         self.debug = debug
 
-        self.enc = Encoder(enc_pins, updatePosCallback) # callback = updatePos
+        self.enc = Encoder(enc_pins) # callback = updatePos
 
     def loop(self, target):
         self.target = target
 
         # PID constants
-        # TODO: tune params
+        # TODO: tune params - init 1.0, 0.0, 0.0
         kp = float(1.0)
         kd = float(0.0)
         ki = float(0.0)

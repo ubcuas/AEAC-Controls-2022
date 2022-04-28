@@ -29,18 +29,24 @@ def main():
     driver_thread = threading.Thread(target=uasdriver.controlLoop)
     driver_thread.start()
 
-    while True:
-        buttonA = wpi.digitalRead(PIN_A)   # A
-        buttonB = wpi.digitalRead(PIN_B)   # B
-        buttonX = wpi.digitalRead(PIN_X)   # X
-        buttonY = wpi.digitalRead(PIN_Y)  # Y
+    try:
+        while True:
+            buttonA = wpi.digitalRead(PIN_A)   # A
+            buttonB = wpi.digitalRead(PIN_B)   # B
+            buttonX = wpi.digitalRead(PIN_X)   # X
+            buttonY = wpi.digitalRead(PIN_Y)  # Y
 
-        raw_ljs_x = wpi.analogRead(PIN_LJSX)
-        raw_ljs_y = wpi.analogRead(PIN_LJSY)
+            raw_ljs_x = wpi.analogRead(PIN_LJSX)
+            raw_ljs_y = wpi.analogRead(PIN_LJSY)
 
-        ljs_x, ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+            ljs_x, ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
 
-        uasdriver.setRemoteValues(buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, 1, 0.0, 0.0, 1)
+            uasdriver.setRemoteValues(buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, 1, 0.0, 0.0, 1)
+    except Exception as e:
+        print(f"{e}\nExiting UAS Driver Runner.")
+        uasdriver.cleanup()
+        sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

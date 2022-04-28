@@ -1,6 +1,7 @@
 import time
 import sys
 import mecanum
+import drive
 import math
 import logging
 import odroid_wiringpi as wpi
@@ -24,24 +25,41 @@ PIN_Y = 10
 
 PIN_LJSX = 25
 PIN_LJSY = 29
-        
-class JoystickCalibration:
+
+class WinchControl:
     def __init__(self):
+        uaslog.info("Starting Motor Drive System init...")
+
         ######################
         # INIT REMOTE VALUES #
         ######################
-        self.buttonA = 1
-        self.buttonB = 1
-        self.buttonX = 1
-        self.buttonY = 1
-
         self.ljs_x = 0.0
         self.ljs_y = 0.0
         self.ljs_sw = 1
         self.rjs_x = 0.0
         self.rjs_y = 0.0
         self.rjs_sw = 1
+
+        ##################
+        # INIT GPIO PINS #
+        ##################
+        self.init_gpio()
+
+        ############
+        # INIT PWM #
+        ############
+        uaslog.debug("Init PWM...")
+        self.pwm = PWM(address=I2C_CHIP, busnum=I2C_BUS, debug=False)
+        self.pwm.setPWMFreq(FREQUENCY)
+
+        ###############
+        # INIT MOTORS #
+        ###############
         
+        # DC BRUSHED
+        self.pololu_0 = TB9051FTG(channel=CHANNEL0, freq=300, pin_in=MOTORS["pololu_0"]["enc_pins"], pin_out=MOTORS["pololu_0"]["driver_pins"], single=True)
+        self.pololu_0.reset(self.pwm)
+
         uaslog.info("Motor Drive System init complete! Starting main routine...")
     
     def setRemoteValues(self, buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, ljs_sw, rjs_x, rjs_y, rjs_sw):
@@ -66,11 +84,10 @@ class JoystickCalibration:
         self.rjs_sw = rjs_sw
 
         uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
-
+        
     def loop(self):
-        uaslog.info("Starting Joystick Motor Control Test...")
-        uaslog.info("Joystick will control 4 wheels to move forward or backward.")
-
+        uaslog.info("Starting Winch Control Test...")
+        uaslog.info("Joystick will control winch motor to go up or down.")
         try:
             while True:
                 # READ JOYSTICK
@@ -86,34 +103,44 @@ class JoystickCalibration:
                 
                 print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
 
+                if self.ljs_y > THRESHOLD_HIGH + 0.1:
+                    self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
+                elif self.ljs_y < THRESHOLD_LOW - 0.1:
+                    self.pololu_0.backward(self.pwm, dutycycle=WINCH_DC_SPEED)
+                else:
+                    self.pololu_0.backward(self.pwm, dutycycle=0)
+
         except Exception as e:
-            uaslog.warning(f"{e}\nJoystick Calibration Test Complete.")
+            uaslog.warning(f"{e}\nWinch Control Test Complete.")
+            self.cleanup()
             sys.exit(0)
 
     def init_gpio(self):
-            uaslog.info("Init GPIO...")
-            # unexport pins
-            for pin in range(0, 256):
-                file = open("/sys/class/gpio/unexport","w")
-                file.write(str(pin))
+        uaslog.info("Init GPIO...")
+        # unexport pins
+        for pin in range(0, 256):
+            file = open("/sys/class/gpio/unexport","w")
+            file.write(str(pin))
 
-            # setup wpi
-            wpi.wiringPiSetup()
-            
-            # set pin mode
-            for pin in GPIO_IN:
-                wpi.pinMode(pin, wpi.INPUT)
-                wpi.pullUpDnControl(pin, wpi.GPIO.PUD_UP)
+        # setup wpi
+        wpi.wiringPiSetup()
+        
+        # set pin mode
+        for pin in GPIO_IN:
+            wpi.pinMode(pin, wpi.INPUT)
+            wpi.pullUpDnControl(pin, wpi.GPIO.PUD_UP)
 
-            for pin in GPIO_OUT:
-                wpi.pinMode(pin, wpi.OUTPUT)
-                # init out pins low
-                wpi.digitalWrite(pin, 0)
-            uaslog.info("Init GPIO complete!")
-    
+        for pin in GPIO_OUT:
+            wpi.pinMode(pin, wpi.OUTPUT)
+            # init out pins low
+            wpi.digitalWrite(pin, 0)
+        uaslog.info("Init GPIO complete!")
+
     def cleanup(self):
         uaslog.info("Cleaning up driver system...")
-
+        # reset motors
+        self.pololu_0.reset(self.pwm)
+        
         # unexport pins
         for pin in range(0, 256):
             file = open("/sys/class/gpio/unexport","w")
@@ -122,7 +149,7 @@ class JoystickCalibration:
         uaslog.info("Driver system cleanup complete!")
 
 def main():
-    test = JoystickCalibration()
+    test = WinchControl()
     test.loop()
         
 if __name__ == "__main__":
