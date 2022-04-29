@@ -29,7 +29,7 @@ class PWM :
     def setPWMFreq(self, freq):
         """ Sets the PWM frequency """
 
-        prescaleval = ((CLK/COUNTER_SIZE)/float(freq)) - 1.0   # 25MHz
+        prescaleval = ((CLK/COUNT_SIZE)/float(freq)) - 1.0   # 25MHz
 
         if self.debug:
             print("Setting PWM frequency to %d Hz" % freq)

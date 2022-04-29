@@ -5,14 +5,14 @@ import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from pwm import PWM
-from constants import *
-from motor_specs import MOTORS
-from TB9051FTG import TB9051FTG
-from PCA9685 import PCA9685
-from utils import remap_range
-from PID_controller import PID
-from encoder import Encoder
+from aeac_controls_2022.pwm import PWM
+from aeac_controls_2022.constants import *
+from aeac_controls_2022.motor_specs import MOTORS
+from aeac_controls_2022.TB9051FTG import TB9051FTG
+from aeac_controls_2022.PCA9685 import PCA9685
+from aeac_controls_2022.utils import remap_range
+from aeac_controls_2022.PID_controller import PID
+from aeac_controls_2022.encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG)
@@ -37,7 +37,7 @@ class ClawControl:
         self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
         self.target_turnigy = [0] #t1, t2 = [in/out]
 
-        self.button_pressed = [1, 0, 0, 0]  # A B X Y
+        self.button_pressed = [0, 0, 0, 1]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
         self.mode = DriverControlMode.IDLE
@@ -124,30 +124,30 @@ class ClawControl:
 
         uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
 
-    def loop(self):
+    def controlLoop(self):
         uaslog.info("Starting Claw Control Test...")
         uaslog.info("Joystick will control claw to extend, grab, and close plate.")
         try:
             while True:
-                # READ JOYSTICK
-                raw_ljs_x = wpi.analogRead(PIN_LJSX)
-                raw_ljs_y = wpi.analogRead(PIN_LJSY)
+                # # READ JOYSTICK
+                # raw_ljs_x = wpi.analogRead(PIN_LJSX)
+                # raw_ljs_y = wpi.analogRead(PIN_LJSY)
 
-                self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+                # self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
 
-                if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
-                    self.ljs_y = 0.0
-                if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
-                    self.ljs_x = 0.0
+                # if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
+                #     self.ljs_y = 0.0
+                # if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
+                #     self.ljs_x = 0.0
                 
-                print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
+                # print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
 
                 # VERTICAL ACTUATORS
                 uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
 
                 # not allowed: dc 30 & y+, dc 0 and y-
-                if not ((math.ceil(self.target_actuator[0]) >= ACTUATOR_DC_MIN and self.ljs_y > THRESHOLD_LOW) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y < THRESHOLD_HIGH)):
-                    self.target_actuator[0] += self.ljs_y
+                if not ((math.ceil(self.target_actuator[0]) >= ACTUATOR_DC_MIN and self.ljs_y < THRESHOLD_LOW) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y > THRESHOLD_HIGH)):
+                    self.target_actuator[0] -= self.ljs_y
                     self.actuonix_1.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                     self.actuonix_2.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                     time.sleep(0.08)
@@ -217,7 +217,7 @@ class ClawControl:
 
 def main():
     test = ClawControl()
-    test.loop()
+    test.controlLoop()
         
 if __name__ == "__main__":
     main()

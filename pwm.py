@@ -3,8 +3,8 @@
 import time
 import math
 from Adafruit_GPIO.I2C import Device as Adafruit_I2C
-from constants import *
-from utils import getCounterValues
+from aeac_controls_2022.constants import MODE1, CLK, COUNT_SIZE, PRESCALE
+from aeac_controls_2022.utils import getCounterValues
 
 # ============================================================================
 # Adafruit PCA9685 16-Channel PWM Servo Driver
@@ -28,7 +28,7 @@ class PWM :
     def setPWMFreq(self, freq):
         """ Sets the PWM frequency """
 
-        prescaleval = ((CLK/COUNTER_SIZE)/float(freq)) - 1.0   # 25MHz
+        prescaleval = ((CLK/COUNT_SIZE)/float(freq)) - 1.0   # 25MHz
 
         if self.debug:
             print("Setting PWM frequency to %d Hz" % freq)

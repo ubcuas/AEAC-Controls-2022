@@ -1,21 +1,20 @@
 import time
 import sys
-import mecanum
 import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from pwm import PWM
-from constants import *
-from motor_specs import MOTORS
-from TB9051FTG import TB9051FTG
-from PCA9685 import PCA9685
-from utils import remap_range
-from PID_controller import PID
-from encoder import Encoder
+from aeac_controls_2022.pwm import PWM
+from aeac_controls_2022.constants import *
+from aeac_controls_2022.motor_specs import MOTORS
+from aeac_controls_2022.TB9051FTG import TB9051FTG
+from aeac_controls_2022.PCA9685 import PCA9685
+from aeac_controls_2022.utils import remap_range
+from aeac_controls_2022.PID_controller import PID
+from aeac_controls_2022.encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 uaslog = logging.getLogger("UASlogger")
 
 PIN_A = 27
@@ -253,8 +252,8 @@ class UASDriver:
                     uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
 
                     # not allowed: dc 30 & y+, dc 0 and y-
-                    if not ((math.ceil(self.target_actuator[0]) >= ACTUATOR_DC_MIN and self.ljs_y > THRESHOLD_LOW) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y < THRESHOLD_HIGH)):
-                        self.target_actuator[0] += self.ljs_y
+                    if not ((math.ceil(self.target_actuator[0]) >= ACTUATOR_DC_MIN and self.ljs_y < THRESHOLD_LOW) or (math.floor(self.target_actuator[0]) == 0 and self.ljs_y > THRESHOLD_HIGH)):
+                        self.target_actuator[0] -= self.ljs_y
                         self.actuonix_1.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                         self.actuonix_2.setPWM(self.pwm, dutycycle=self.target_actuator[0]+30)
                         time.sleep(0.08)

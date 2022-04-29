@@ -5,14 +5,14 @@ import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from pwm import PWM
-from constants import *
-from motor_specs import MOTORS
-from TB9051FTG import TB9051FTG
-from PCA9685 import PCA9685
-from utils import remap_range
-from PID_controller import PID
-from encoder import Encoder
+from aeac_controls_2022.pwm import PWM
+from aeac_controls_2022.constants import *
+from aeac_controls_2022.motor_specs import MOTORS
+from aeac_controls_2022.TB9051FTG import TB9051FTG
+from aeac_controls_2022.PCA9685 import PCA9685
+from aeac_controls_2022.utils import remap_range
+from aeac_controls_2022.PID_controller import PID
+from aeac_controls_2022.encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG)
@@ -85,23 +85,23 @@ class WinchControl:
 
         uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
         
-    def loop(self):
+    def controlLoop(self):
         uaslog.info("Starting Winch Control Test...")
         uaslog.info("Joystick will control winch motor to go up or down.")
         try:
             while True:
-                # READ JOYSTICK
-                raw_ljs_x = wpi.analogRead(PIN_LJSX)
-                raw_ljs_y = wpi.analogRead(PIN_LJSY)
+                # # READ JOYSTICK
+                # raw_ljs_x = wpi.analogRead(PIN_LJSX)
+                # raw_ljs_y = wpi.analogRead(PIN_LJSY)
 
-                self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+                # self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
 
-                if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
-                    self.ljs_y = 0.0
-                if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
-                    self.ljs_x = 0.0
+                # if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
+                #     self.ljs_y = 0.0
+                # if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
+                #     self.ljs_x = 0.0
                 
-                print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
+                # print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
 
                 if self.ljs_y > THRESHOLD_HIGH + 0.1:
                     self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
@@ -150,7 +150,7 @@ class WinchControl:
 
 def main():
     test = WinchControl()
-    test.loop()
+    test.controlLoop()
         
 if __name__ == "__main__":
     main()

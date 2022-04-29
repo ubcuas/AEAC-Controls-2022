@@ -5,14 +5,14 @@ import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from pwm import PWM
-from constants import *
-from motor_specs import MOTORS
-from TB9051FTG import TB9051FTG
-from PCA9685 import PCA9685
-from utils import remap_range
-from PID_controller import PID
-from encoder import Encoder
+from aeac_controls_2022.pwm import PWM
+from aeac_controls_2022.constants import *
+from aeac_controls_2022.motor_specs import MOTORS
+from aeac_controls_2022.TB9051FTG import TB9051FTG
+from aeac_controls_2022.PCA9685 import PCA9685
+from aeac_controls_2022.utils import remap_range
+from aeac_controls_2022.PID_controller import PID
+from aeac_controls_2022.encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG)
@@ -37,7 +37,7 @@ class DriveTest:
         self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
         self.target_turnigy = [0] #t1, t2 = [in/out]
 
-        self.button_pressed = [1, 0, 0, 0]  # A B X Y
+        self.button_pressed = [0, 0, 0, 1]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
         self.mode = DriverControlMode.IDLE
@@ -119,7 +119,7 @@ class DriveTest:
 
         uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
 
-    def loop(self):
+    def controlLoop(self):
         uaslog.info("Starting Drive Test...")
         uaslog.info("Use the Joystick to drive the drone.")
 
@@ -216,7 +216,7 @@ class DriveTest:
 
 def main():
     test = DriveTest()
-    test.loop()
+    test.controlLoop()
         
 if __name__ == "__main__":
     main()

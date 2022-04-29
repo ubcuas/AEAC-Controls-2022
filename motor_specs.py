@@ -31,28 +31,28 @@ MOTORS = {
         "driver_pins": [12, 13], # dir, en
     },
     "actuonix_1": {
-        "position": "down left",
+        "position": "veritcal left",
         "frequency": 300,   # hz
         "dc_low": 30,     # 30-60%
         "dc_high": 60,
         "stroke": 100,   # mm
     },
     "actuonix_2": {
-        "position": "down right",
+        "position": "veritcal right",
         "frequency": 300,   # hz
         "dc_low": 30,     # 30-60%
         "dc_high": 60,
         "stroke": 100,   # mm
     },
     "actuonix_3": {
-        "position": "side left",
+        "position": "horizontal left",
         "frequency": 300,   # hz
         "dc_low": 30,     # 30-60%
         "dc_high": 60,
         "stroke": 100,   # mm
     },
     "actuonix_4": {
-        "position": "side right",
+        "position": "horizontal right",
         "frequency": 300,   # hz
         "dc_low": 30,     # 30-60%
         "dc_high": 60,

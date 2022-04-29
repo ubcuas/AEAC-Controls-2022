@@ -1,6 +1,6 @@
 # mecanum wheel control interface
 
-from constants import *
+from aeac_controls_2022.constants import ACCEL_MULTIPLIER
 
 def setMotorTargets(left_vrx, left_vry, right_vrx, target_pololu, debug=False):
     # VRY = Throttle

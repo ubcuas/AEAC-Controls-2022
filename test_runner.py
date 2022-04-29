@@ -46,7 +46,7 @@ def main():
         print("Enter a valid number >:(")
         sys.exit(0)
 
-    tester_thread = threading.Thread(target=uastester.loop)
+    tester_thread = threading.Thread(target=uastester.controlLoop)
     tester_thread.start()
 
     try:
