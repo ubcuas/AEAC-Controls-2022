@@ -40,7 +40,7 @@ class ClawControl:
         self.button_pressed = [1, 0, 0, 0]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
-        self.mode = ControlMode.IDLE
+        self.mode = DriverControlMode.IDLE
 
         ######################
         # INIT REMOTE VALUES #

@@ -26,7 +26,7 @@ def main():
 
     uasdriver = UASDriver()
 
-    driver_thread = threading.Thread(target=uasdriver.controlLoop)
+    driver_thread = threading.Thread(target=uasdriver.controlLoop, daemon=True)
     driver_thread.start()
 
     try:

@@ -40,7 +40,7 @@ class DriveTest:
         self.button_pressed = [1, 0, 0, 0]  # A B X Y
         self.ljs_pressed = False
         self.plate_closed = False
-        self.mode = ControlMode.IDLE
+        self.mode = DriverControlMode.IDLE
 
         ######################
         # INIT REMOTE VALUES #
@@ -125,18 +125,18 @@ class DriveTest:
 
         try:
             while True:
-                # READ JOYSTICK
-                raw_ljs_x = wpi.analogRead(PIN_LJSX)
-                raw_ljs_y = wpi.analogRead(PIN_LJSY)
+                # # READ JOYSTICK
+                # raw_ljs_x = wpi.analogRead(PIN_LJSX)
+                # raw_ljs_y = wpi.analogRead(PIN_LJSY)
 
-                self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
+                # self.ljs_x, self.ljs_y = remap_range(raw_ljs_x, raw_ljs_y)
 
-                if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
-                    self.ljs_y = 0.0
-                if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
-                    self.ljs_x = 0.0
+                # if self.ljs_y < THRESHOLD_HIGH and self.ljs_y > THRESHOLD_LOW:
+                #     self.ljs_y = 0.0
+                # if self.ljs_x < THRESHOLD_HIGH and self.ljs_x > THRESHOLD_LOW:
+                #     self.ljs_x = 0.0
                 
-                print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
+                # print(f"sX: {self.ljs_x:.4f}, sY: {self.ljs_y:.4f}")
 
                 # SET MOTOR TARGETS
                 self.target_pololu = drive.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
