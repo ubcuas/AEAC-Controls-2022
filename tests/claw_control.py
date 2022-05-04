@@ -73,22 +73,24 @@ class ClawControl:
         # INIT MOTORS #
         ###############
         uaslog.debug("Init Motors...")
+
         # ACTUATORS
+        # vertical left
         self.actuonix_1 = PCA9685(channel=CHANNEL8, freq=300)
         self.actuonix_1.reset(self.pwm)
         self.actuonix_1.setPWM(self.pwm, dutycycle=30)
-
+        # vertical right
         self.actuonix_2 = PCA9685(channel=CHANNEL9, freq=300)
         self.actuonix_2.reset(self.pwm)
         self.actuonix_2.setPWM(self.pwm, dutycycle=30)
-
+        # horizontal
         self.actuonix_3 = PCA9685(channel=CHANNEL10, freq=300)
         self.actuonix_3.reset(self.pwm)
         self.actuonix_3.setPWM(self.pwm, dutycycle=30)
 
-        self.actuonix_4 = PCA9685(channel=CHANNEL11, freq=300)
-        self.actuonix_4.reset(self.pwm)
-        self.actuonix_4.setPWM(self.pwm, dutycycle=30)
+        # self.actuonix_4 = PCA9685(channel=CHANNEL11, freq=300)
+        # self.actuonix_4.reset(self.pwm)
+        # self.actuonix_4.setPWM(self.pwm, dutycycle=30)
         
         # # SERVO
         # self.turnigy_1 = PCA9685(channel=CHANNEL12, freq=300)
@@ -157,7 +159,7 @@ class ClawControl:
                 if not ((math.ceil(self.target_actuator[1]) >= ACTUATOR_DC_MIN and self.ljs_x > THRESHOLD_LOW) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x < THRESHOLD_HIGH)):
                     self.target_actuator[1] += self.ljs_x
                     self.actuonix_3.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
-                    self.actuonix_4.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
+                    # self.actuonix_4.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
                     time.sleep(0.08)
 
                 # if self.ljs_pressed:
@@ -204,7 +206,7 @@ class ClawControl:
         self.actuonix_1.reset(self.pwm)
         self.actuonix_2.reset(self.pwm)
         self.actuonix_3.reset(self.pwm)
-        self.actuonix_4.reset(self.pwm)
+        # self.actuonix_4.reset(self.pwm)
         # self.turnigy_1.reset(self.pwm)
         # self.turnigy_2.reset(self.pwm)
 
