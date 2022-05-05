@@ -72,6 +72,7 @@ class UASDriver:
         # INIT MOTORS #
         ###############
         uaslog.debug("Init Motors...")
+        
         # ACTUATORS
         # vertical left
         self.actuonix_1 = PCA9685(channel=CHANNEL8, freq=300)
