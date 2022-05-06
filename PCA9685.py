@@ -1,8 +1,10 @@
 """ This class is an instance of a single PCA9685 board PWM channel """
 
-from aeac_controls_2022.constants import I2C_BUS
-from aeac_controls_2022.utils import getCounterValues
-from aeac_controls_2022.pwm import PWM
+import sys
+sys.path.append('./aeac_controls_2022/')
+from constants import I2C_BUS
+from utils import getCounterValues
+from pwm import PWM
 
 class PCA9685:
     def __init__(self, channel, freq, debug=False):

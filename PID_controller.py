@@ -1,9 +1,11 @@
 # PID loop controller for motor encoder
 import time
 import logging
-from aeac_controls_2022.constants import MAX_DC, MIN_DC
-from aeac_controls_2022.encoder import Encoder
-from aeac_controls_2022.utils import pwmToDc
+import sys
+sys.path.append('./aeac_controls_2022/')
+from constants import MAX_DC, MIN_DC
+from encoder import Encoder
+from utils import pwmToDc
 
 logging.basicConfig(level=logging.DEBUG)
 uaslog = logging.getLogger("UASlogger")

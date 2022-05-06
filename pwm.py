@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+import sys
 import time
 import math
 from Adafruit_GPIO.I2C import Device as Adafruit_I2C
-from aeac_controls_2022.constants import MODE1, CLK, COUNT_SIZE, PRESCALE
-from aeac_controls_2022.utils import getCounterValues
+sys.path.append('./aeac_controls_2022/')
+from constants import MODE1, CLK, COUNT_SIZE, PRESCALE
+from utils import getCounterValues
 
 # ============================================================================
 # Adafruit PCA9685 16-Channel PWM Servo Driver

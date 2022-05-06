@@ -1,4 +1,6 @@
-from aeac_controls_2022.constants import COUNT_SIZE, CENTER_POS
+import sys
+sys.path.append('./aeac_controls_2022/')
+from constants import COUNT_SIZE, CENTER_POS
 
 # calculate OFF count from duty cycle and delay %
 def getCounterValues(delay, dc):

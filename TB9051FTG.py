@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
-from aeac_controls_2022.constants import I2C_BUS
-from aeac_controls_2022.utils import getCounterValues
+import sys
 import odroid_wiringpi as wpi
+sys.path.append('./aeac_controls_2022/')
+from constants import I2C_BUS
+from utils import getCounterValues
 
 class TB9051FTG:
     # inputs = [encA, encB]

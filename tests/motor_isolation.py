@@ -174,7 +174,7 @@ class MotorIsolation:
 
 def main():
     test = MotorIsolation()
-    test.loop()
+    test.controlLoop()
 
 if __name__ == "__main__":
     main()

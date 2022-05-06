@@ -1,18 +1,17 @@
 import time
 import sys
-import mecanum
-import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from aeac_controls_2022.pwm import PWM
-from aeac_controls_2022.constants import *
-from aeac_controls_2022.motor_specs import MOTORS
-from aeac_controls_2022.TB9051FTG import TB9051FTG
-from aeac_controls_2022.PCA9685 import PCA9685
-from aeac_controls_2022.utils import remap_range
-from aeac_controls_2022.PID_controller import PID
-from aeac_controls_2022.encoder import Encoder
+sys.path.append('../aeac_controls_2022/')
+from pwm import PWM
+from constants import *
+from motor_specs import MOTORS
+from TB9051FTG import TB9051FTG
+from PCA9685 import PCA9685
+from utils import remap_range
+from PID_controller import PID
+from encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG)

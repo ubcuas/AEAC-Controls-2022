@@ -4,17 +4,18 @@ import drive
 import math
 import logging
 import odroid_wiringpi as wpi
-from aeac_controls_2022.pwm import PWM
-from aeac_controls_2022.constants import *
-from aeac_controls_2022.motor_specs import MOTORS
-from aeac_controls_2022.TB9051FTG import TB9051FTG
-from aeac_controls_2022.PCA9685 import PCA9685
-from aeac_controls_2022.utils import remap_range
-from aeac_controls_2022.PID_controller import PID
-from aeac_controls_2022.encoder import Encoder
+sys.path.append('./aeac_controls_2022/')
+from pwm import PWM
+from constants import *
+from motor_specs import MOTORS
+from TB9051FTG import TB9051FTG
+from PCA9685 import PCA9685
+from utils import remap_range
+from PID_controller import PID
+from encoder import Encoder
 
 logging.getLogger("Adafruit_I2C.Device.Bus.{0}.Address.{1:#0X}".format(0, 0X40)).setLevel(logging.WARNING)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 uaslog = logging.getLogger("UASlogger")
 
 PIN_A = 27
@@ -72,7 +73,7 @@ class UASDriver:
         # INIT MOTORS #
         ###############
         uaslog.debug("Init Motors...")
-        
+
         # ACTUATORS
         # vertical left
         self.actuonix_1 = PCA9685(channel=CHANNEL8, freq=300)
@@ -199,11 +200,11 @@ class UASDriver:
 
                 # move according to mode and joystick ctrls
                 if self.mode == DriverControlMode.IDLE:
-                    uaslog.debug("idle")
+                    # uaslog.debug("idle")
                     pass
 
                 elif self.mode == DriverControlMode.DRIVE:
-                    uaslog.debug("drive")
+                    # uaslog.debug("drive")
 
                     self.target_pololu = drive.setMotorTargets(self.ljs_x, self.ljs_y, self.rjs_x, self.target_pololu)
 
@@ -237,7 +238,7 @@ class UASDriver:
                         self.pololu_4.backward(self.pwm, dutycycle=self.pid_4.getDc())
                 
                 elif self.mode == DriverControlMode.WINCH:
-                    uaslog.debug("winch")
+                    # uaslog.debug("winch")
                     pass
                     
                     # if self.ljs_y > THRESHOLD_HIGH + 0.1:
@@ -248,7 +249,7 @@ class UASDriver:
                     #     self.pololu_0.backward(self.pwm, dutycycle=0)
 
                 elif self.mode == DriverControlMode.CLAW:
-                    uaslog.debug("claw")
+                    # uaslog.debug("claw")
 
                     # VERTICAL ACTUATORS
                     uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")

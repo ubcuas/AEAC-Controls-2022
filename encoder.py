@@ -1,6 +1,8 @@
-# pololu class and encoder?
+# pololu encoder
+import sys
 import odroid_wiringpi as wpi
-from aeac_controls_2022.motor_specs import MOTORS
+sys.path.append('./aeac_controls_2022/')
+from motor_specs import MOTORS
 
 class Encoder:
     def __init__(self, enc, callback=None):
