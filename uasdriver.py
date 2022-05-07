@@ -239,7 +239,11 @@ class UASDriver:
                 
                 elif self.mode == DriverControlMode.WINCH:
                     # uaslog.debug("winch")
-                    pass
+                    # reset all pololu motors to prevent buzzing
+                    self.pololu_1.reset(self.pwm)
+                    self.pololu_2.reset(self.pwm)
+                    self.pololu_3.reset(self.pwm)
+                    self.pololu_4.reset(self.pwm)
                     
                     # if self.ljs_y > THRESHOLD_HIGH + 0.1:
                     #     self.pololu_0.forward(self.pwm, dutycycle=WINCH_DC_SPEED)
@@ -250,6 +254,12 @@ class UASDriver:
 
                 elif self.mode == DriverControlMode.CLAW:
                     # uaslog.debug("claw")
+
+                    # reset all pololu motors to prevent buzzing
+                    self.pololu_1.reset(self.pwm)
+                    self.pololu_2.reset(self.pwm)
+                    self.pololu_3.reset(self.pwm)
+                    self.pololu_4.reset(self.pwm)
 
                     # VERTICAL ACTUATORS
                     uaslog.debug(f"DC1: {self.target_actuator[0]}, DC2: {self.target_actuator[1]}")
