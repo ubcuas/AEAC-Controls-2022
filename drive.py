@@ -15,16 +15,16 @@ def setMotorTargets(left_vrx, left_vry, right_vrx, target_pololu, debug=False):
 
     if left_vrx > 0.0:
         # move right - decrease right motors speed, increase left
-        target_pololu[1] += left_vrx * ACCEL_MULTIPLIER #RL
-        target_pololu[2] -= left_vrx * ACCEL_MULTIPLIER #FL
-        target_pololu[3] -= left_vrx * ACCEL_MULTIPLIER #RR
-        target_pololu[4] -= left_vrx * ACCEL_MULTIPLIER #FR
+        target_pololu[1] -= left_vrx * ACCEL_MULTIPLIER #FR
+        target_pololu[2] += left_vrx * ACCEL_MULTIPLIER #RR
+        # target_pololu[3] += left_vrx * ACCEL_MULTIPLIER #FL
+        # target_pololu[4] += left_vrx * ACCEL_MULTIPLIER #RL
     if left_vrx < 0.0:
         # move left - decrease left motors speed, increase right
-        target_pololu[1] += left_vrx * ACCEL_MULTIPLIER
-        target_pololu[2] -= left_vrx * ACCEL_MULTIPLIER
-        target_pololu[3] -= left_vrx * ACCEL_MULTIPLIER
-        target_pololu[4] -= left_vrx * ACCEL_MULTIPLIER
+        # target_pololu[1] += left_vrx * ACCEL_MULTIPLIER #FR
+        # target_pololu[2] -= left_vrx * ACCEL_MULTIPLIER #RR
+        target_pololu[3] -= left_vrx * ACCEL_MULTIPLIER #FL
+        target_pololu[4] -= left_vrx * ACCEL_MULTIPLIER #RL
 
     return target_pololu
 

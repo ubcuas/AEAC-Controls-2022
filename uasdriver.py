@@ -201,7 +201,11 @@ class UASDriver:
                 # move according to mode and joystick ctrls
                 if self.mode == DriverControlMode.IDLE:
                     # uaslog.debug("idle")
-                    pass
+                    # reset all pololu motors to prevent buzzing
+                    self.pololu_1.reset(self.pwm)
+                    self.pololu_2.reset(self.pwm)
+                    self.pololu_3.reset(self.pwm)
+                    self.pololu_4.reset(self.pwm)
 
                 elif self.mode == DriverControlMode.DRIVE:
                     # uaslog.debug("drive")
