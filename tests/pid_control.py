@@ -3,7 +3,7 @@ import sys
 import math
 import logging
 import odroid_wiringpi as wpi
-sys.path.append('../aeac_controls_2022/')
+sys.path.append('./aeac_controls_2022/')
 from pwm import PWM
 from constants import *
 from motor_specs import MOTORS
@@ -95,7 +95,7 @@ class PIDControl:
         self.rjs_y = rjs_y
         self.rjs_sw = rjs_sw
 
-        uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
+        # uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
 
     def controlLoop(self):
         uaslog.info("Starting PID Control Test...")

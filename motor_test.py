@@ -19,7 +19,9 @@ uaslog = logging.getLogger("UASlogger")
 
 class MotorIsolation:
     def __init__(self):
+        # wpi.wiringPiSetup()
         self.init_gpio()
+
         ######################
         # INIT REMOTE VALUES #
         ######################
@@ -47,17 +49,17 @@ class MotorIsolation:
         ###############
         uaslog.debug("Init Motors...")
         # DC BRUSHED
-        self.pololu_1 = TB9051FTG(channel=CHANNEL4, freq=300, pin_in=MOTORS["pololu_1"]["enc_pins"], pin_out=MOTORS["pololu_1"]["driver_pins"])
+        self.pololu_1 = TB9051FTG(channel=CHANNEL4, freq=300, pin_in=MOTORS["pololu_1"]["enc_pins"], pin_out=[30, 7])
         self.pololu_1.reset(self.pwm)
 
-        self.pololu_2 = TB9051FTG(channel=CHANNEL5, freq=300, pin_in=MOTORS["pololu_2"]["enc_pins"], pin_out=MOTORS["pololu_2"]["driver_pins"])
-        self.pololu_2.reset(self.pwm)
+        # self.pololu_2 = TB9051FTG(channel=CHANNEL5, freq=300, pin_in=MOTORS["pololu_2"]["enc_pins"], pin_out=MOTORS["pololu_2"]["driver_pins"])
+        # self.pololu_2.reset(self.pwm)
 
-        self.pololu_3 = TB9051FTG(channel=CHANNEL6, freq=300, pin_in=MOTORS["pololu_3"]["enc_pins"], pin_out=MOTORS["pololu_3"]["driver_pins"])
-        self.pololu_3.reset(self.pwm)
+        # self.pololu_3 = TB9051FTG(channel=CHANNEL6, freq=300, pin_in=MOTORS["pololu_3"]["enc_pins"], pin_out=MOTORS["pololu_3"]["driver_pins"])
+        # self.pololu_3.reset(self.pwm)
 
-        self.pololu_4 = TB9051FTG(channel=CHANNEL7, freq=300, pin_in=MOTORS["pololu_4"]["enc_pins"], pin_out=MOTORS["pololu_4"]["driver_pins"])
-        self.pololu_4.reset(self.pwm)
+        # self.pololu_4 = TB9051FTG(channel=CHANNEL7, freq=300, pin_in=MOTORS["pololu_4"]["enc_pins"], pin_out=MOTORS["pololu_4"]["driver_pins"])
+        # self.pololu_4.reset(self.pwm)
 
     def setRemoteValues(self, buttonA, buttonB, buttonX, buttonY, ljs_x, ljs_y, ljs_sw, rjs_x, rjs_y, rjs_sw):
         # joystick movement tolerance
@@ -80,7 +82,7 @@ class MotorIsolation:
         self.rjs_y = rjs_y
         self.rjs_sw = rjs_sw
 
-        # uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
+        uaslog.debug(f"lSW: {ljs_sw}, lX: {ljs_x}, lY: {ljs_y}, rX: {rjs_x}")
 
     def controlLoop(self):
         try:
@@ -90,11 +92,13 @@ class MotorIsolation:
                 dc = 60
                 self.pwm.setPWMFreq(int(freq))
 
-                uaslog.info("Starting Motor Isolation Test...")
-                uaslog.info("Each motor will be run forward then back for 3 seconds individually.")
+                # uaslog.info("Starting Motor Isolation Test...")
+                # uaslog.info("Each motor will be run forward then back for 3 seconds individually.")
 
                 uaslog.info("Running Pololu 1 Position {}".format(MOTORS["pololu_1"]["position"]))
                 uaslog.info("Forward...")
+                # wpi.digitalWrite(30, 0)    # dir/pwm1 0
+                
                 self.pololu_1.forward(self.pwm, dutycycle=int(dc))
                 time.sleep(3)
                 uaslog.info("Backward...")
@@ -102,32 +106,32 @@ class MotorIsolation:
                 time.sleep(3)
                 self.pololu_1.reset(self.pwm)
 
-                uaslog.info("Running Pololu 2 Position {}".format(MOTORS["pololu_2"]["position"]))
-                uaslog.info("Forward...")
-                self.pololu_2.forward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                uaslog.info("Backward...")
-                self.pololu_2.backward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                self.pololu_2.reset(self.pwm)
+                # uaslog.info("Running Pololu 2 Position {}".format(MOTORS["pololu_2"]["position"]))
+                # uaslog.info("Forward...")
+                # self.pololu_2.forward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # uaslog.info("Backward...")
+                # self.pololu_2.backward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # self.pololu_2.reset(self.pwm)
 
-                uaslog.info("Running Pololu 3 Position {}".format(MOTORS["pololu_3"]["position"]))
-                uaslog.info("Forward...")
-                self.pololu_3.forward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                uaslog.info("Backward...")
-                self.pololu_3.backward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                self.pololu_3.reset(self.pwm)
+                # uaslog.info("Running Pololu 3 Position {}".format(MOTORS["pololu_3"]["position"]))
+                # uaslog.info("Forward...")
+                # self.pololu_3.forward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # uaslog.info("Backward...")
+                # self.pololu_3.backward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # self.pololu_3.reset(self.pwm)
 
-                uaslog.info("Running Pololu 4 Position {}".format(MOTORS["pololu_4"]["position"]))
-                uaslog.info("Forward...")
-                self.pololu_4.forward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                uaslog.info("Backward...")
-                self.pololu_4.backward(self.pwm, dutycycle=int(dc))
-                time.sleep(3)
-                self.pololu_4.reset(self.pwm)
+                # uaslog.info("Running Pololu 4 Position {}".format(MOTORS["pololu_4"]["position"]))
+                # uaslog.info("Forward...")
+                # self.pololu_4.forward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # uaslog.info("Backward...")
+                # self.pololu_4.backward(self.pwm, dutycycle=int(dc))
+                # time.sleep(3)
+                # self.pololu_4.reset(self.pwm)
 
                 uaslog.info("Motor Isolation Test Complete!")
                 
@@ -162,9 +166,9 @@ class MotorIsolation:
 
         # reset motors
         self.pololu_1.reset(self.pwm)
-        self.pololu_2.reset(self.pwm)
-        self.pololu_3.reset(self.pwm)
-        self.pololu_4.reset(self.pwm)
+        # self.pololu_2.reset(self.pwm)
+        # self.pololu_3.reset(self.pwm)
+        # self.pololu_4.reset(self.pwm)
 
         # unexport pins
         for pin in range(0, 256):

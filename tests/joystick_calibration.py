@@ -3,7 +3,7 @@ import sys
 import math
 import logging
 import odroid_wiringpi as wpi
-sys.path.append('../aeac_controls_2022/')
+sys.path.append('./aeac_controls_2022/')
 from pwm import PWM
 from constants import *
 from motor_specs import MOTORS

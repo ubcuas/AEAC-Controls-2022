@@ -1,5 +1,6 @@
 # motor specs as a dict
 MOTORS = {
+    # unused
     "pololu_0": {
         "position": "winch",
         "frequency": 300, # 300 rpm
@@ -51,6 +52,7 @@ MOTORS = {
         "dc_high": 60,
         "stroke": 100,   # mm
     },
+    # unused
     "actuonix_4": {
         "position": "horizontal right",
         "frequency": 300,   # hz
@@ -58,12 +60,14 @@ MOTORS = {
         "dc_high": 60,
         "stroke": 100,   # mm
     },
+    # unused
     "turnigy_1": {
         "position": "plate left",
         "frequency": 300,   # hz
         "dc_low": 28,     # 28-64%
         "dc_high": 64,
     },
+    # unused
     "turnigy_2": {
         "position": "plate right",
         "frequency": 300,   # hz

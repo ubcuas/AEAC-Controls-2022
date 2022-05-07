@@ -7,7 +7,7 @@ wpi.wiringPiSetup()
 wpi.pinMode(0, 1)
  
 while True:
-    wpi.digitalWrite(0, 1)
+    wpi.digitalWrite(27, 1)
     time.sleep(1)
-    wpi.digitalWrite(0, 0)
+    wpi.digitalWrite(27, 0)
     time.sleep(1)
