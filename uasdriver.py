@@ -34,7 +34,7 @@ class UASDriver:
         # INIT MOTOR TARGET VALUES #
         ############################
         self.target_pololu = [0, 0, 0, 0, 0] # p0, p1, p2, p3, p4 = [w, fl, fr, rl, rr]
-        self.target_actuator = [0, 0]  # a1, a2, a3, a4 = [vertical, horizontal]
+        self.target_actuator = [0, 30]  # a1, a2, a3, a4 = [vertical, horizontal]
         self.target_turnigy = [0] #t1, t2 = [in/out]
 
         self.button_pressed = [0, 0, 0, 1]  # A B X Y
@@ -83,10 +83,10 @@ class UASDriver:
         self.actuonix_2 = PCA9685(channel=CHANNEL9, freq=300)
         self.actuonix_2.reset(self.pwm)
         self.actuonix_2.setPWM(self.pwm, dutycycle=30)
-        # horizontal
+        # horizontal, start open
         self.actuonix_3 = PCA9685(channel=CHANNEL10, freq=300)
         self.actuonix_3.reset(self.pwm)
-        self.actuonix_3.setPWM(self.pwm, dutycycle=30)
+        self.actuonix_3.setPWM(self.pwm, dutycycle=60)
 
         # self.actuonix_4 = PCA9685(channel=CHANNEL11, freq=300)
         # self.actuonix_4.reset(self.pwm)
@@ -276,7 +276,7 @@ class UASDriver:
                         time.sleep(0.08)
 
                     # HORIZONTAL ACTUATORS
-                    # not allowed: dc 30 & y+, dc 0 and y-
+                    # not allowed: dc 30 & x+, dc 0 and x-
                     if not ((math.ceil(self.target_actuator[1]) >= ACTUATOR_DC_MIN and self.ljs_x < THRESHOLD_LOW) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x > THRESHOLD_HIGH)):
                         self.target_actuator[1] -= self.ljs_x
                         self.actuonix_3.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
