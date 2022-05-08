@@ -7,11 +7,11 @@ def setMotorTargets(left_vrx, left_vry, right_vrx, target_pololu, debug=False):
     # VRY = Throttle
     # VRX = Steering
 
-    # set target forward/back for throttle
-    target_pololu[1] += left_vry * ACCEL_MULTIPLIER
-    target_pololu[2] -= left_vry * ACCEL_MULTIPLIER
-    target_pololu[3] += left_vry * ACCEL_MULTIPLIER
-    target_pololu[4] += left_vry * ACCEL_MULTIPLIER
+    # # set target forward/back for throttle
+    target_pololu[1] -= left_vry * ACCEL_MULTIPLIER
+    target_pololu[2] += left_vry * ACCEL_MULTIPLIER
+    target_pololu[3] -= left_vry * ACCEL_MULTIPLIER
+    target_pololu[4] -= left_vry * ACCEL_MULTIPLIER
 
     if left_vrx > 0.0:
         # move right - decrease right motors speed, increase left
@@ -25,6 +25,33 @@ def setMotorTargets(left_vrx, left_vry, right_vrx, target_pololu, debug=False):
         # target_pololu[2] -= left_vrx * ACCEL_MULTIPLIER #RR
         target_pololu[3] -= left_vrx * ACCEL_MULTIPLIER #FL
         target_pololu[4] -= left_vrx * ACCEL_MULTIPLIER #RL
+
+    # DIFFERENTIAL DRIVE TEST
+    
+    # if left_vry >= 0.0:
+    #     # forward
+    #     if left_vrx >= 0.0:
+    #         target_pololu[1] += (1.0 - left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[2] -= (1.0 - left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[3] += 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[4] += 1.0 * ACCEL_MULTIPLIER
+    #     else:
+    #         target_pololu[1] += 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[2] -= 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[3] += (1.0 + left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[4] += (1.0 + left_vrx) * ACCEL_MULTIPLIER
+    # else:
+    #     # backward
+    #     if left_vrx >= 0.0:
+    #         target_pololu[1] += 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[2] -= 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[3] += (1.0 - left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[4] += (1.0 - left_vrx) * ACCEL_MULTIPLIER
+    #     else:
+    #         target_pololu[1] += (1.0 + left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[2] -= (1.0 + left_vrx) * ACCEL_MULTIPLIER
+    #         target_pololu[3] += 1.0 * ACCEL_MULTIPLIER
+    #         target_pololu[4] += 1.0 * ACCEL_MULTIPLIER
 
     return target_pololu
 
