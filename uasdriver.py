@@ -277,8 +277,8 @@ class UASDriver:
 
                     # HORIZONTAL ACTUATORS
                     # not allowed: dc 30 & y+, dc 0 and y-
-                    if not ((math.ceil(self.target_actuator[1]) >= ACTUATOR_DC_MIN and self.ljs_x > THRESHOLD_LOW) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x < THRESHOLD_HIGH)):
-                        self.target_actuator[1] += self.ljs_x
+                    if not ((math.ceil(self.target_actuator[1]) >= ACTUATOR_DC_MIN and self.ljs_x < THRESHOLD_LOW) or (math.floor(self.target_actuator[1]) == 0 and self.ljs_x > THRESHOLD_HIGH)):
+                        self.target_actuator[1] -= self.ljs_x
                         self.actuonix_3.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
                         # self.actuonix_4.setPWM(self.pwm, dutycycle=self.target_actuator[1] + ACTUATOR_DC_MIN)
                         time.sleep(0.08)
